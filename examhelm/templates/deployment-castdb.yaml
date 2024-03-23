@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "examhelm.fullname" . }}
+  namespace: {{ .Values.castdb.namespace }}  
+  labels:
+    {{- include "examhelm.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.castdb.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "examhelm.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "examhelm.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{/*  serviceAccountName: {{ include "examhelm.serviceAccountName" . }} 
+*/}}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext: 
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.castdb.image }}:{{ .Values.castdb.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.castdb.pullPolicy }}
+          env:
+            - name: {{ .Values.castdb.env.name }}
+              valueFrom:
+                secretKeyRef: 
+                  name: {{ .Values.secretcast.name }}
+                  key: password   
+          envFrom:
+            - configMapRef:  
+                name: {{ include "examhelm.fullname" . }}-configmapcast
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            - name {{ .Values.VolumeMounts.name }}
+              mountPath: {{ .Values.castdb.VolumeMounts.mountPath }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+      - name: {{ .Values.VolumeMounts.name }}
+        persistenceVolumeClaim:
+          claimName: {{ include "examhelm.fullname" . }}-pvc
+        {{- toYaml . | nindent 8 }}
+{{/*        configMap:
+          name: {{- include "examhelm.fullname" . }}-configmapcast
+          {{- range $key, $value := .Values.castdb.envFrom.configMap }}
+          {{- end }} */}}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

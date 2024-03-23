@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "examhelm.fullname" . }}-configmapcast 
+  namespace: {{ .Values.castdb.namespace }}
+  labels:
+    {{- include "examhelm.labels" . | nindent 4 }}
+data:
+  {{- range $key, $val := .Values.configmapcast }}
+  {{ $key }}: {{ $val }}
+  {{- end }}

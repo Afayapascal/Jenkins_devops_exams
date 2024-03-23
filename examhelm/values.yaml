@@ -1,0 +1,138 @@
+
+configmapcast:
+  - name: POSTGRES_DB
+    key: cast_db_dev
+  - name: POSTGRES_USER
+    key: cast_db_username
+
+configmapmovie:
+  - name: POSTGRES_DB
+    key: movie_db_dev
+  - name: POSTGRES_USER
+    key: movie_db_username
+
+persistence:
+  enabled: true
+  name: pvc-cast
+  namespace: dev
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  annotations: {}
+ 
+secretmovie:
+  name: moviedb-rootpass
+  namespace: dev
+  password: bW92aWVfZGJfcGFzc3dvcmQ= 
+
+secretcast:
+  name: castdb-rootpass
+  namespace: dev
+  password: Y2FzdF9kYl9wYXNzd29yZA== 
+
+cast:
+   namespace: dev
+   replicas: 1
+   image: foker84/jenkins_devops_exams-cast_service
+   tag: "latest"
+   pullPolicy: IfNotPresent
+   service:
+     type: NodePort
+     port: 8002
+     targetPort: 8000
+
+   ingress:
+     enabled: false
+   autoscaling:
+     enabled: false
+
+   env:
+     - name: DATABASE_URI
+       value: postgresql://cast_db_username:cast_db_password@cast_db/cast_db_dev
+
+movie:
+   namespace: dev
+   replicas: 3
+   image: foker84/jenkins_devops_exams-movie_service
+   tag: "latest"
+   pullPolicy: IfNotPresent
+   service:
+     type: NodePort
+     port: 8001
+     targetPort: 8000
+   
+   ingress:
+     enabled: false
+   autoscaling:
+     enabled: false
+   env:
+     - name: DATABASE_URI
+       value: postgresql://movie_db_username:movie_db_password@movie_db/movie_db_dev
+     - name: CAST_SERVICE_HOST_URL
+       value: http://cast_service:8000/api/v1/casts/
+
+castdb:
+    namespace: dev
+    replicas: 1
+    image: postgres:12.1-alpine
+    tag: ""
+    pullPolicy: IfNotPresent
+    autoscaling:
+      enabled: false
+    env:
+      name: POSTGRES_PASSWORD
+    envFrom:
+      - configMapRef:
+          name: configmapcast
+#    secret:
+#         POSTGRES_PASSWORD: Y2FzdF9kYl9wYXNzd29yZA== 
+    storage:
+      size: 10Gi
+    volumeMount:
+      - name: postgresdatacast
+        mountpath: /var/lib/postgresql/data
+    volume:
+    - name: postgresdatacast
+      configMapRef:
+        name: configmapcast
+moviedb:
+    namespace: dev
+    replicas: 1
+    image: postgres:12.1-alpine
+    tag: ""
+    pullPolicy: IfNotPresent
+    autoscaling:
+      enabled: false
+    env:
+      name: POSTGRES_PASSWORD
+    envFrom:
+      - configMapRef:
+          name: configmapmovie
+#    secret:
+#         POSTGRES_PASSWORD: bW92aWVfZGJfcGFzc3dvcmQ=
+    storage:
+      size: 10Gi
+    volumeMounts:
+        name: postgresdatacast
+        mountpath: /var/lib/postgresql/data
+    volume:
+         name: postgres_data_movie
+nginx:
+   namespace: dev
+   replicas: 1
+   image: nginx
+   tag: "latest"
+   pullPolicy: IfNotPresent
+   service:
+     type: NodePort
+     port: 8080
+     targetPort: 8080
+   ingress:
+     enabled: false
+   autoscaling:
+     enabled: false
+
+   volumeMounts:
+       name: nginxvolume
+   volume:
+       name: nginxvolume
+       mountpath: ./nginx_config.conf:/etc/nginx/conf.d/default.conf
