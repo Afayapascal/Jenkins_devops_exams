@@ -13,13 +13,13 @@ agent any // Jenkins will be able to select all available agents
 stages {
         stage(' Docker Build image'){ // docker build different image
             steps {
-               dir('movie-service')
+               dir('movie-service'){
                script {
                 sh '''
                  #docker rm -f jenkins
                  docker build -t $DOCKER_ID/$DOCKER_IMAGE_MOVIE:$DOCKER_TAG_1 .			
                 '''
-                }
+                }}
             }
         }
         stage('Docker run'){ // run container from our builded image cast
