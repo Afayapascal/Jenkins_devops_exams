@@ -15,7 +15,7 @@ stages {
             steps {
                script{
                 sh '''
-                 docker build -t $DOCKER_ID/$DOCKER_IMAGE_NGINX:$DOCKER_TAG_NGINX
+                 docker build -t $DOCKER_ID/$DOCKER_IMAGE_NGINX:$DOCKER_TAG_NGINX .
                 '''
                 }
                dir('movie-service'){
