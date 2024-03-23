@@ -13,11 +13,22 @@ agent any // Jenkins will be able to select all available agents
 stages {
         stage(' Docker Build image'){ // docker build different image
             steps {
+               script{
+                sh '''
+                 docker build -t $DOCKER_ID/$DOCKER_IMAGE_NGINX:$DOCKER_TAG_NGINX
+                '''
+                }
                dir('movie-service'){
                script {
                 sh '''
                  #docker rm -f jenkins
                  docker build -t $DOCKER_ID/$DOCKER_IMAGE_MOVIE:$DOCKER_TAG_1 .			
+                '''
+                }}
+               dir('cast-service'){
+               script {
+                sh '''
+                 docker build -t $DOCKER_ID/$DOCKER_IMAGE_CAST:$DOCKER_TAG_1 .
                 '''
                 }}
             }
@@ -27,11 +38,11 @@ stages {
                     script {
                     sh '''
                     #docker run --name postgrejenkins $DOCKER_IMAGE_POSTGRES:$DOCKER_TAG_POSTGRE
-                    docker run --name nginxjenkins $DOCKER_IMAGE_NGINX:$DOCKER_TAG_NGINX
+                    docker run -d --name nginxjenkins $DOCKER_IMAGE_NGINX:$DOCKER_TAG_NGINX
 		    sleep 6
-		     docker run --name castpostgre_container -e postgres_user=cast_db_username -e postgres_password=cast_db_password -e postgres_db=cast_db_dev postgres:12.1-alpine
+		     docker run -d --name castpostgre_container -e postgres_user=cast_db_username -e postgres_password=cast_db_password -e postgres_db=cast_db_dev postgres:12.1-alpine
 		    sleep 10
-		     docker run --name castpostgre_container -e postgres_user=movie_db_username -e postgres_password=movie_db_password -e postgres_db=movie_db_dev postgres:12.1-alpine
+		     docker run --name moviepostgre_container -e postgres_user=movie_db_username -e postgres_password=movie_db_password -e postgres_db=movie_db_dev postgres:12.1-alpine
 		    sleep 10
                      docker run -d -p 8001:8000 --name moviejenkins $DOCKER_ID/$DOCKER_IMAGE_MOVIE:$DOCKER_TAG
                     sleep 10
