@@ -112,9 +112,9 @@ stage('Deploiement en staging'){
                 mkdir .kube
                 ls
                 cat $KUBECONFIG > .kube/config
-                cp fastapi/values.yaml values.yml
+                cp examhelm/values.yaml values.yml
                 cat values.yml
-                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG_1}+g" values.yml
                 helm upgrade --install examhelm ./examhelm/ --values=./examhelm/values.yaml --namespace staging
                 '''
                 }
@@ -138,9 +138,9 @@ stage('Deploiement en staging'){
                 mkdir .kube
                 ls
                 cat $KUBECONFIG > .kube/config
-                cp fastapi/values.yaml values.yml
+                cp examhelm/values.yaml values.yml
                 cat values.yml
-                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG_1}+g" values.yml
 		helm upgrade --install examhelm ./examhelm/ --values=./examhelm/values.yaml --namespace prod
                 '''
                 }
