@@ -14,7 +14,7 @@ configmapmovie:
 persistence:
   enabled: true
   name: pvc-cast
-  namespace: dev
+  namespace: staging
   accessMode: ReadWriteOnce
   size: 10Gi
   annotations: {}
