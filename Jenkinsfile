@@ -35,15 +35,15 @@ stages {
                     script {
                     sh '''
                     #docker run --name postgrejenkins $DOCKER_IMAGE_POSTGRES:$DOCKER_TAG_POSTGRE
-                    docker run -d --name nginxjenkins5 $DOCKER_IMAGE_NGINX:$DOCKER_TAG_NGINX
+                    docker run -d --name nginxjenkins6 $DOCKER_IMAGE_NGINX:$DOCKER_TAG_NGINX
 		    sleep 6
-		     docker run -d --name castpostgre_container5 -e postgres_user=cast_db_username -e postgres_password=cast_db_password -e postgres_db=cast_db_dev postgres:12.1-alpine
+		     docker run -d --name castpostgre_container6 -e postgres_user=cast_db_username -e postgres_password=cast_db_password -e postgres_db=cast_db_dev postgres:12.1-alpine
 		    #sleep 10
 		     #docker run --name moviepostgre_container -e postgres_user=movie_db_username -e postgres_password=movie_db_password -e postgres_db=movie_db_dev postgres:12.1-alpine
 		    sleep 10
-                     docker run -d -p 8001:8000 --name moviejenkins6 $DOCKER_ID/$DOCKER_IMAGE_MOVIE:$DOCKER_TAG_1
+                     docker run -d -p 8001:8000 --name moviejenkins7 $DOCKER_ID/$DOCKER_IMAGE_MOVIE:$DOCKER_TAG_1
                     sleep 10
-                     docker run -d -p 8002:8000 --name castjenkins6 $DOCKER_ID/$DOCKER_IMAGE_CAST:$DOCKER_TAG_1
+                     docker run -d -p 8002:8000 --name castjenkins7 $DOCKER_ID/$DOCKER_IMAGE_CAST:$DOCKER_TAG_1
                     '''
                     }
                 }
@@ -115,7 +115,7 @@ stage('Deploiement en staging'){
                 cp examhelm/values.yaml values.yml
                 cat values.yml
                 sed -i "s+tag.*+tag: ${DOCKER_TAG_1}+g" values.yml
-                helm upgrade --install examhelm ./examhelm/ --values=./examhelm/values.yaml --namespace staging
+                helm upgrade --install examhelm ./examhelm/ --values=./examhelm/values-staging.yaml --namespace staging
                 '''
                 }
             }
