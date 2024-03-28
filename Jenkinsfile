@@ -35,15 +35,15 @@ stages {
                     script {
                     sh '''
                     #docker run --name postgrejenkins $DOCKER_IMAGE_POSTGRES:$DOCKER_TAG_POSTGRE
-                    docker run -d --name nginxjenkins8 $DOCKER_IMAGE_NGINX:$DOCKER_TAG_NGINX
+                    docker run -d --name nginxjenkins9 $DOCKER_IMAGE_NGINX:$DOCKER_TAG_NGINX
 		    sleep 6
-		     docker run -d --name castpostgre_container8 -e postgres_user=cast_db_username -e postgres_password=cast_db_password -e postgres_db=cast_db_dev postgres:12.1-alpine
+		     docker run -d --name castpostgre_container9 -e postgres_user=cast_db_username -e postgres_password=cast_db_password -e postgres_db=cast_db_dev postgres:12.1-alpine
 		    #sleep 10
 		     #docker run --name moviepostgre_container -e postgres_user=movie_db_username -e postgres_password=movie_db_password -e postgres_db=movie_db_dev postgres:12.1-alpine
 		    sleep 10
-                     docker run -d -p 8001:8000 --name moviejenkins9 $DOCKER_ID/$DOCKER_IMAGE_MOVIE:$DOCKER_TAG_1
+                     docker run -d -p 8001:8000 --name moviejenkins10 $DOCKER_ID/$DOCKER_IMAGE_MOVIE:$DOCKER_TAG_1
                     sleep 10
-                     docker run -d -p 8002:8000 --name castjenkins9 $DOCKER_ID/$DOCKER_IMAGE_CAST:$DOCKER_TAG_1
+                     docker run -d -p 8002:8000 --name castjenkins10 $DOCKER_ID/$DOCKER_IMAGE_CAST:$DOCKER_TAG_1
                     '''
                     }
                 }
@@ -112,7 +112,7 @@ stage('Deploiement en staging'){
                 mkdir .kube
                 ls
                 cat $KUBECONFIG > .kube/config
-                cp examhelm/values.yaml values.yml
+                cp examhelm/values-staging.yaml values.yml
                 cat values.yml
                 sed -i "s+tag.*+tag: ${DOCKER_TAG_1}+g" values.yml
                 helm upgrade --install examhelm ./examhelm/ --values=./examhelm/values-staging.yaml --namespace staging
@@ -138,10 +138,10 @@ stage('Deploiement en staging'){
                 mkdir .kube
                 ls
                 cat $KUBECONFIG > .kube/config
-                cp examhelm/values.yaml values.yml
+                cp examhelm/values-prod.yaml values.yml
                 cat values.yml
                 sed -i "s+tag.*+tag: ${DOCKER_TAG_1}+g" values.yml
-		helm upgrade --install examhelm ./examhelm/ --values=./examhelm/values.yaml --namespace prod
+		helm upgrade --install examhelm ./examhelm/ --values=./examhelm/values-prod.yaml --namespace prod
                 '''
                 }
             }
